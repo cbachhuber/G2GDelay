@@ -20,7 +20,7 @@ Download the Arduino IDE, open the Arduino_code project and install the librarie
 
 ### Android Application
 Copy the file G2GDelay.apk from the folder Android_app to your Android device running Android 5.0 or higher. Make sure to enable the option 'Unknown Sources' in System Settings/Security before attempting to install the APK.
-Alternatively to sending the measurement results from the Arduino to an Android device, you can connect the arduino to a computer and observe the output on a serial console. In that case, you can skip the first two paragraphs of "Starting Everything".
+Alternatively to sending the measurement results from the Arduino to an Android device, you can connect the arduino to a computer and observe the output on the serial console that comes with the Arduino IDE. In that case, you can skip the first two paragraphs of "Starting Everything".
 
 
 ### Starting Everything
