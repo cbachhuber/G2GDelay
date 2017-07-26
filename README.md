@@ -31,11 +31,10 @@ After that, start the Android application, allow it to control the bluetooth ada
 
 I strongly recommend to align the Phototransistor to the LED in the beginning. The phototransistor has a little knob on one side, this should point towards the LED and be very close to it, the know may even touch the LED. This way, you can check whether the Phototransistor is correctly connected to the circuit. You should see samples with a delay of 0 milliseconds on your Android device. This makes sense because there is nothing delaying the propagation of light between the LED and Phototransistor. 
 
+Next, for testing the G2G latency of a video transmission system (e.g. your smartphone, with the camera application started), you can put the LED in the field of view of a camera and put the PT on the corresponding display where the LED is shown. Make sure to place the PT on the LED and let the knob on the PT face towards the screen. 
 
 ### Troubleshooting
-If you do not see any samples coming in, first try to adjust the position of the Phototransistor relative to the LED, if that does not succeed, try to flip the polarity of the Phototransistor contacts.
-
-Next, for testing the G2G latency of a video transmission system (e.g. your smartphone, with the camera application started), you can put the LED in the field of view of a camera and put the PT on the corresponding display where the LED is shown. Make sure to place the PT on the LED and let the knob on the PT face towards the screen. Additional hints, if the system is working when putting the LED directly to the PT, but not when putting the LED on the screen:
+If you do not see any samples coming in, first try to adjust the position of the Phototransistor relative to the LED, if that does not succeed, try to flip the polarity of the Phototransistor contacts. Additional hints, if the system is working when putting the LED directly to the PT, but not when putting the LED on the screen:
 
 - The system is based on detecting a brightness increase at the PT. Therefore, maximize the screen brightness to minimize the influence of ambient light.
 - Make sure that the environment of the turned off LED is depicted as dark as possible on the screen, and that the enabled LED is sufficiently bright.
