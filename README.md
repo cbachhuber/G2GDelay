@@ -1,5 +1,5 @@
 # Glass to Glass Delay Measurement System
-This repository contains all the information and software you need to build your own Glass-to-Glass delay measurement system. You also need the hardware detailed in the Construction Manual below. There are three main software parts in this folder: the circuit layout (file 'Circuit.pdf') for the measurement device, the Arduino source code (in folder 'Arduino_code') and the Android Application (in folder 'Android_app'). These are described in the following:
+This repository contains all the information and software you need to build your own Glass-to-Glass delay measurement system. You also need the hardware detailed in the Construction Manual below. There are three main software parts in this folder: the circuit layout (file 'Circuit.pdf') for the measurement device, the Arduino source code (in folder 'Arduino_code') and the Android Application (in folder 'Android_app'). Alternatively to the Android application using bluetooth, you can connect the Measurement System via USB, and use delayrecorder.py to guide you through the measurement process. The setup steps are described in the following:
 
 ### Construction Manual
 For building the measurement device, you need the following parts, depicted in Circuit.pdf:
@@ -21,7 +21,7 @@ Download the Arduino IDE, open the Arduino_code project and install the librarie
 ### Android Application
 Copy the file G2GDelay.apk from the folder Android_app to your Android device running Android 5.0 or higher. Make sure to enable the option 'Unknown Sources' in System Settings/Security before attempting to install the APK.
 
-Alternatively to sending the measurement results from the Arduino to an Android device, you can connect the arduino to a computer and observe the output on the serial console that comes with the Arduino IDE. In that case, you can skip the first two paragraphs of "Starting Everything".
+Alternatively to sending the measurement results from the Arduino to an Android device, you can connect the arduino to a computer using USB and observe the output on the serial console that comes with the Arduino IDE, or, even more convenient, use the script delayrecorder.py to observe, process and store your measurements. In case of using a serial USB connection, you can skip the first two paragraphs of "Starting Everything".
 
 
 ### Starting Everything
