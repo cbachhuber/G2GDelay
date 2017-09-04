@@ -41,7 +41,7 @@ If you do not see any samples coming in, first try to adjust the position of the
 - You might want to attach the PT with an adhesive film strip to the monitor, if you tend to lose the location of the LED while manually holding the PT to the screen.
 
 
-Congratulations, you are now all set to do your very own Glass-to-Glass delay measurements!
+Congratulations, you are now all set to do your very own Glass-to-Glass delay measurements! If you use the system in course of your research, please cite our corresponding paper: https://doi.org/10.1109/ICIP.2016.7532735. Thank you very much!
 
 
 Further details about the measurement system are provided in https://arxiv.org/abs/1510.01134v1. Feel free to contact me (christoph.bachhuber@tum.de) in case you run into any difficulties.
