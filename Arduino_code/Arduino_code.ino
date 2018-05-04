@@ -184,7 +184,8 @@ void loop() {
             for(int i=0;i<WINDOW_LENGTH;i++)
             {Serial.print(val_A_in[sample_counter-WINDOW_LENGTH+i]);Serial.print(" ");};
             Serial.print("End-to-End delay: ");
-            Serial.print( (t_photoTransTrig - t_ledTrig)*0.008 );
+	    //In the following line, 0.255 is the delay inherent to the delay measurement system. Needs to be subtracted.
+            Serial.print( (t_photoTransTrig - t_ledTrig)*0.008 - 0.255);
             Serial.println("ms");
             Serial.print(t_photoTransTrig);
             Serial.print(", ");
@@ -206,7 +207,7 @@ void loop() {
               for(int i=0;i<=WINDOW_LENGTH;i++)
               {Serial.print(val_A_in[sample_counter-WINDOW_LENGTH+i]);Serial.print(" ");};
               Serial.print("End-to-End delay: ");
-              Serial.print( (t_photoTransTrig + 65535 - t_ledTrig)*0.008 );
+              Serial.print( (t_photoTransTrig + 65535 - t_ledTrig)*0.008 -0.255);
               Serial.println("ms");
               Serial.print("Roll Over! Values: ");
               Serial.print(t_photoTransTrig);
