@@ -1,6 +1,12 @@
 # Glass to Glass Delay Measurement System
 
-This repository contains all the information and software you need to build your own Glass-to-Glass delay measurement system. You also need the hardware detailed in the Construction Manual below. There are three main components in this folder: the circuit layout (file [Circuit.pdf](https://github.com/cbachhuber/G2GDelay/blob/master/Circuit.pdf)) for the measurement device, the Arduino source code (in folder [Arduino_code](https://github.com/cbachhuber/G2GDelay/tree/master/Arduino_code)) and the optional Android Application (in folder [Android_app](https://github.com/cbachhuber/G2GDelay/tree/master/Android_App)). Alternatively to the Android application using bluetooth, you can connect the Measurement System via USB to a computer, and use [delayrecorder.py](https://github.com/cbachhuber/G2GDelay/blob/master/delayrecorder.py) (or the serial monitor of Arduino's IDE) to guide you through the measurement process. The setup steps are described in the following:
+This repository contains all the information and software you need to build your own Glass-to-Glass delay measurement system. You also need the hardware detailed in the [Construction Manual](https://github.com/cbachhuber/G2GDelay#construction-manual) below. There are three main components in this folder: the circuit layout (file [Circuit.pdf](https://github.com/cbachhuber/G2GDelay/blob/master/Circuit.pdf)) for the measurement device, the Arduino source code (in folder [Arduino_code](https://github.com/cbachhuber/G2GDelay/tree/master/Arduino_code)) and the optional Android Application (in folder [Android_app](https://github.com/cbachhuber/G2GDelay/tree/master/Android_App)). 
+
+You have two options for retrieving G2G delay values from the Arduino:
+- Quick setup, not so convenient usage: connect the measurement system to a computer via USB, and use [delayrecorder.py](https://github.com/cbachhuber/G2GDelay/blob/master/delayrecorder.py) to guide you through the measurement process. Even quicker: use the serial monitor of Arduino's IDE to retrieve G2G delay values.
+- More complex setup, very convenient usage: instead of using a computer, connect the Arduino to an Android device using Bluetooth. The provided Android application will guide the user throught the measurement process.
+
+The instructions for both options are given below. The setup steps for the measurement system itself are described in the following:
 
 ## Construction Manual
 
@@ -11,8 +17,8 @@ For building the measurement device, you need the following parts, depicted in [
 - Phototransistor: For example the SDP 8406-003
 - Resistor 11kOhm: Any 11kOhm resistor will do the job, e.g. the 1/4W 11K
 - Cables
-- Optional: HC-05. For example the Aukru HC-05 Wireless-Bluetooth-Host Serial-Transceiver-Module
-- Optional: 9V battery. Of course, you don't have to use the 9V battery as power supply, instead you can for example connect the Arduino to a USB port.
+- Optional for Bluetooth usage: HC-05. For example the Aukru HC-05 Wireless-Bluetooth-Host Serial-Transceiver-Module
+- Optional: 9V battery. You don't have to use the 9V battery as power supply, instead you can for example connect the Arduino to a USB port.
 - Optional: A breadboard
 
 Next, connect the elements as in [Circuit.pdf](https://github.com/cbachhuber/G2GDelay/blob/master/Circuit.pdf). In [Circuit.pdf](https://github.com/cbachhuber/G2GDelay/blob/master/Circuit.pdf), the principle of the circuit is shown, you can simplify it and waive for example the breadboard.
@@ -23,7 +29,7 @@ Next, connect the elements as in [Circuit.pdf](https://github.com/cbachhuber/G2G
 
 ## Measuring with Computer
 
-The quickest way to get measurements is connecting the arduino to a computer using USB and observe the output on the serial console that comes with the Arduino IDE, or, even more convenient, use the script delayrecorder.py to observe, process and store your measurements. Once the Arduino is connected to the USB port of a computer running the serial monitor of the arduino IDE, continue reading at [Starting Measurements](https://github.com/cbachhuber/G2GDelay#starting-measurements).
+The quickest way to get measurements is connecting the arduino to a computer using USB and observe the output on the serial console that comes with the Arduino IDE, or, more convenient, use the script delayrecorder.py to observe, process and store your measurements. Once the Arduino is connected to the USB port of a computer running the serial monitor of the arduino IDE, continue reading at [Starting Measurements](https://github.com/cbachhuber/G2GDelay#starting-measurements).
 
 ## Measuring with Android Device
 
