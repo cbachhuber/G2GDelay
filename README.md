@@ -23,7 +23,7 @@ Download the Arduino IDE, open the Arduino_code project and install the librarie
 
 ## Measuring with Computer
 
-The quickest way to get measurements is connecting the arduino to a computer using USB and observe the output on the serial console that comes with the Arduino IDE, or, even more convenient, use the script delayrecorder.py to observe, process and store your measurements. Now, continue reading at [Starting Measurements](https://github.com/cbachhuber/G2GDelay#starting-measurements).
+The quickest way to get measurements is connecting the arduino to a computer using USB and observe the output on the serial console that comes with the Arduino IDE, or, even more convenient, use the script delayrecorder.py to observe, process and store your measurements. Once the Arduino is connected to the USB port of a computer running the serial monitor of the arduino IDE, continue reading at [Starting Measurements](https://github.com/cbachhuber/G2GDelay#starting-measurements).
 
 ## Measuring with Android Device
 
