@@ -1,10 +1,10 @@
 # Glass to Glass Delay Measurement System
 
-This repository contains all the information and software you need to build your own Glass-to-Glass delay measurement system. You also need the hardware detailed in the Construction Manual below. There are three main components in this folder: the circuit layout (file 'Circuit.pdf') for the measurement device, the Arduino source code (in folder 'Arduino_code') and the optional Android Application (in folder 'Android_app'). Alternatively to the Android application using bluetooth, you can connect the Measurement System via USB to a computer, and use delayrecorder.py (or the serial monitor of Arduino's IDE) to guide you through the measurement process. The setup steps are described in the following:
+This repository contains all the information and software you need to build your own Glass-to-Glass delay measurement system. You also need the hardware detailed in the Construction Manual below. There are three main components in this folder: the circuit layout (file [Circuit.pdf](https://github.com/cbachhuber/G2GDelay/blob/master/Circuit.pdf)) for the measurement device, the Arduino source code (in folder [Arduino_code](https://github.com/cbachhuber/G2GDelay/tree/master/Arduino_code)) and the optional Android Application (in folder [Android_app](https://github.com/cbachhuber/G2GDelay/tree/master/Android_App)). Alternatively to the Android application using bluetooth, you can connect the Measurement System via USB to a computer, and use [delayrecorder.py](https://github.com/cbachhuber/G2GDelay/blob/master/delayrecorder.py) (or the serial monitor of Arduino's IDE) to guide you through the measurement process. The setup steps are described in the following:
 
 ## Construction Manual
 
-For building the measurement device, you need the following parts, depicted in Circuit.pdf:
+For building the measurement device, you need the following parts, depicted in [Circuit.pdf](https://github.com/cbachhuber/G2GDelay/blob/master/Circuit.pdf):
 
 - Arduino Mega 2560: Does not have to be original Arduino, can also be e.g. a SunFounder Mega 2560
 - LED: A Light-emitting diode, e.g. LED 5-4500 RT
@@ -15,11 +15,11 @@ For building the measurement device, you need the following parts, depicted in C
 - Optional: 9V battery. Of course, you don't have to use the 9V battery as power supply, instead you can for example connect the Arduino to a USB port.
 - Optional: A breadboard
 
-Next, connect the elements as in Circuit.pdf. In Circuit.pdf, the principle of the circuit is shown, you can simplify it and waive for example the breadboard.
+Next, connect the elements as in [Circuit.pdf](https://github.com/cbachhuber/G2GDelay/blob/master/Circuit.pdf). In [Circuit.pdf](https://github.com/cbachhuber/G2GDelay/blob/master/Circuit.pdf), the principle of the circuit is shown, you can simplify it and waive for example the breadboard.
 
 ## Arduino source code
 
-Download the Arduino IDE, open the Arduino_code project and install the libraries PinChangeInt and TimerOne (both reside in the folder Arduino_code). Now, you can compile and upload the code to the Arduino board via USB.
+[Download the Arduino IDE](https://www.arduino.cc/en/Main/Software), open the Arduino_code project and install the libraries PinChangeInt and TimerOne (both reside in the folder [Arduino_code](https://github.com/cbachhuber/G2GDelay/tree/master/Arduino_code)). Now, you can compile and upload the code to the Arduino board via USB.
 
 ## Measuring with Computer
 
