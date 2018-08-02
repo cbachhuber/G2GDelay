@@ -55,12 +55,11 @@ If you do not see any samples coming in, first try to adjust the position of the
 Congratulations, you are now all set to do your very own Glass-to-Glass delay measurements! If you use the system in course of your research, please reference our corresponding paper ["A System for High Precision Glass-to-Glass Delay Measurements in Video Communication"](https://doi.org/10.1109/ICIP.2016.7532735). Thank you very much!
 
     @inproceedings{bachhuber2016system,
-      title={A system for high precision glass-to-glass delay measurements in video communication},
+      title={A System for High Precision Glass-to-Glass Delay Measurements in Video Communication},
       author={Bachhuber, Christoph and Steinbach, Eckehard},
-      booktitle={Image Processing (ICIP), 2016 IEEE International Conference on},
+      booktitle={IEEE International Conference on Image Processing (ICIP)},
       pages={2132--2136},
       year={2016},
-      organization={IEEE}
     }
 
 
