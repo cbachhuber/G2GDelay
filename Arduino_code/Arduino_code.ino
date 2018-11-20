@@ -1,160 +1,150 @@
 #include <PinChangeInt.h>	// http://www.arduino.cc/playground/Main/PinChangeInt
 #include <TimerOne.h>		// http://www.arduino.cc/playground/Code/Timer1
 
-//Serial Display options
-#define RAW_VALUES              0 //=1 overrides the parameter MATLAB and prints the raw sample values read by the Phototransistor to the serial console.
-#define MATLAB                  1 //MATLAB=0 prints many statistics, MATLAB=1 prints only the delay.
-#define CRT                     1 //=1 for measuring a CRT or Plasma, =0 for measuring an LCD, OLED or other monitor
-#define WINDOW_LENGTH           5 //WINDOW_LENGTH samlpes are printed to the display in case an event is detected.
-#define CRT_WINDOW             50 //The window length in samples, over which we maximize for CRT=1
-#define TIME_BETWEEN          645 //Time between two measurements, in ms. In this instance chosen to ensure 1s from event to event
+/* PROGRAM OVERVIEW
+Conceptually, this program works as follows: parallel to the usual Arduino loop(), there runs
+an interrupt loop (ISR()) at a user defined frequency (SAMPLING_RATE). The interrupt loop manages
+turning on of the LED, records the resistance of the PT into the vector PT_voltages, and
+detects a sudden brightness increase (turning on LED visible at PT) at the PT. If this is
+detected, the interrupt loop sets flag_detected and records a time stamp. The main Arduino
+loop() always checks whether flag_detected has been set. If this is the case, the main loop
+computes the G2G delay and reports it over both the USB and the Bluetooth serial connections.
+Once that is done, all variables are reset and a new measurement is started.
+*/
+
+// Filtering Options
+#define CRT_WINDOW         50  // The window length in samples, over which we maximize for CRT=1
+#define THRESH_COUNT_SLOPES 2  // Minimum number of samples required to acknowledge a rising edge
+#define THRESH_ACC_SLOPES  20  // Minimum sample value increase to acknowledge a rising edge
 
 //Technical Options
-#define THRESH_COUNT_SLOPES     2 //Minimum number of samples required to acknowledge a rising edge (this can always be overridden by one very high sample!)
-#define THRESH_ACC_SLOPES      20 //Minimum sample value increase to acknowledge a rising edge
-#define SAMPLING_RATE        1000 //Can be 1000,2000 or 8000 samples per second. 2000 proved as good tradeoff between measurement time and accuracy
-#define NUM_SAMPLES          2000 //Do not change this
-#define LED_START             NUM_SAMPLES/10
-#define LED_END               NUM_SAMPLES - 200
+/* SAMPLING_RATE can be 1000,2000 or 8000 samples per second, defines system accuracy. Given a
+ maximum number of samples (NUM_SAMPLES) also defines maximum G2G delay that can be measured.
+ 2000 proved to be a good tradeoff between maximum measurable G2G delay and accuracy */
+#define SAMPLING_RATE    2000
+#define NUM_SAMPLES      2000  // Number of recorded samples during one msmt process. Do not change.
+#define TIME_BETWEEN      645  // Time between two measurements, in milliseconds. Do not change.
 
-// Global variables 
-unsigned int val_A_in[NUM_SAMPLES]           = {0};
-unsigned int storage[CRT_WINDOW]  	         = {0};
-byte          count_pos_slopes               = {0};   // number of successive pos. slope samples
-byte          acc_pos_slopes                 = {0};   // accumulated values of successive pos. slope samples
-unsigned int  sample_counter                 = {0}; // Set this to zero if sampling shall start right away, to NUM_SAMPLES if you want to get the start signal via bluetooth
-bool          sampling_finished              = LOW;
-bool          flag_detected                  = LOW;
-unsigned int  i_ledON;
-unsigned int  i_ledOFF;
-unsigned int buf;
-short threshold                      = THRESH_ACC_SLOPES;
-double e2edelay=0;
+// Global variables
+unsigned int  PT_voltages[NUM_SAMPLES] = {0};  // Vector of voltages read from the pin_PT
+unsigned int  storage[CRT_WINDOW]  	   = {0};  // Vector of temporally stored samples for filtering
+byte          count_pos_slopes         = {0};  // Number of successive positive slope samples
+byte          acc_pos_slopes           = {0};  // Accumulated values of successive positive slope samples
+/* Set sample_counter to zero if sampling shall start right away, to NUM_SAMPLES if you want to get the
+start signal via bluetooth */
+unsigned int  sample_counter           = {0};
+bool          sampling_finished        = LOW;  // Is set to true if sampling is finished
+bool          flag_detected            = LOW;  // Is set to true if the PT detected that the LED was turned on.
+unsigned int  i_ledON;                         // Sample at which the LED is turned on. Will be random.
+unsigned int  i_ledOFF;                        // Sample at which the LED is turned off. Will be random.
+short threshold          = THRESH_ACC_SLOPES;  // Set for now, can be changed from android software later
 
 // Timestamps that will be measured with Timer1
-unsigned int  t_ledTrig                      = {0};
-unsigned int  t_photoDiodeTrig               = {0};
-unsigned int  t_photoTransTrig               = {0};
+unsigned int  t_ledTrig                = {0};  // When the LED was triggered
+unsigned int  t_photoTransTrig         = {0};  // When a brightness increase was noted at the PT
 
 //Timer settings and pin assignments
-const unsigned int timer1_period             = 65535;  // microsec., http://playground.arduino.cc/code/timer1
-const unsigned int lightEmitterLEDPin        = 13; // the number of the LED pin
-const unsigned int phototrans_A_in_Pin       = 5;  // analog input pin
-const unsigned int photoTransistorPin        = 3;  // digital input pin
-const unsigned int randomseed_A_in_Pin       = 0;
-int timeout                                  = 0;
-
+const unsigned int timer1_period     = 65535;  // timer period in microseconds, see http://playground.arduino.cc/code/timer1
+const unsigned int pin_LED              = 13;  // the index of the LED pin, see circuit.pdf
+const unsigned int pin_PT                = 5;  // PT analog input pin
+const unsigned int pin_Randomseed        = 0;  // Random seed for the time between measurements
 
 
 void setup() {
-  Serial.begin(115200);
-  Serial1.begin(9600);
-  Serial.println(); //warm up the serial port
+  Serial.begin(115200);  // USB connection to PC
+  Serial.println();  // warm up the serial port
+
+  Serial1.begin(9600);  // Bluetooth connection
 
   // initialize the lightEmitterLED pin as an output:
-  pinMode(lightEmitterLEDPin, OUTPUT);  
-  
+  pinMode(pin_LED, OUTPUT);
+
   setup_msmt_timer1();
-  setup_sampling_timer2(); 
-  i_ledON  = LED_START;//random( 50, NUM_SAMPLES*0.1 );
-  i_ledOFF = LED_END;//random( i_ledON+10, NUM_SAMPLES*0.9 ); 
+  setup_sampling_timer2();
+  i_ledON = random( 50, NUM_SAMPLES * 0.1 );  // Setting constrained random start time of the LED
+  i_ledOFF = random( i_ledON + 10, NUM_SAMPLES*0.9 );  // Setting constrained random end time of the LED
 }
 
-// analog in signal sampling routine
-ISR(TIMER2_COMPA_vect){ //timer2 interrupt 
-  
+// This interrupt is called at the frequency defined in SAMPLING_RATE
+ISR(TIMER2_COMPA_vect){
+
   if ( sample_counter == 0 )
-  {      
-      val_A_in[sample_counter] = 255;
+  {
+      PT_voltages[sample_counter] = 255;
       sample_counter++;
   }
   else if( sample_counter < NUM_SAMPLES )
-  {             
-    
+  {
+
+
     if( sample_counter == i_ledON )
-    {
-      digitalWrite(lightEmitterLEDPin, HIGH);
+    {  // Turning on LED, recording time
+      digitalWrite(pin_LED, HIGH);
       t_ledTrig = Timer1.read();
     }
     else if ( sample_counter == i_ledOFF )
-    {
-      digitalWrite(lightEmitterLEDPin, LOW);
+    {  // Turning off LED
+      digitalWrite(pin_LED, LOW);
     }
-    
-    if(!CRT)
-    {
-      val_A_in[sample_counter] = analogRead( phototrans_A_in_Pin );
-    }
-    else
-    {
-      //Load current value via analogRead into the small storage structre
-      if(sample_counter<=CRT_WINDOW) //Just build the storage
+
+      if(sample_counter<=CRT_WINDOW)  // Just build the storage
       {
-        storage[sample_counter] = analogRead(phototrans_A_in_Pin);
+        storage[sample_counter] = analogRead(pin_PT);
       }
-      else//shift the entire storage by one, put the newest value to the end
+      else  // shift the entire storage by one, put the newest value to the end
       {
-        for(int i=0; i<CRT_WINDOW;i++) //Not efficient, let's see if this works
+        for(int i=0; i<CRT_WINDOW; i++)
          {
-	    storage[i]=storage[i+1];
+	       storage[i]=storage[i+1];
          }
-         storage[CRT_WINDOW] = analogRead(phototrans_A_in_Pin);
+         storage[CRT_WINDOW] = analogRead(pin_PT);
       }
-      
-      //Extract the maximum over the last few values
-     buf=0;
-     for(int i=0; i<=min(CRT_WINDOW,sample_counter);i++) 
+
+      // Extract the maximum over the last few values
+     unsigned int buf=0;
+     for(int i=0; i<=min(CRT_WINDOW,sample_counter);i++)
      {
-	buf=max(buf,storage[i]);
+	    buf=max(buf,storage[i]);
      }
-      //Write it to the samples
-       val_A_in[sample_counter] = buf;
-    }
-    
-    // This if loop catches the positive edge of the phototransistor response to the LED
+     // Write the maximum back to the samples
+     PT_voltages[sample_counter] = buf;
+
+    // This if clause catches the positive edge of the phototransistor response to the LED
     if( sample_counter >=  2)
     {
-      short current_slope  = (val_A_in[sample_counter] - val_A_in[sample_counter-1]);
-      short previous_slope = (val_A_in[sample_counter-1] - val_A_in[sample_counter-2]);
-      
-      if( current_slope > 0  && previous_slope > 0 ) 
-      {
-          count_pos_slopes++; 
+      short current_slope  = (PT_voltages[sample_counter] - PT_voltages[sample_counter-1]);
+      short previous_slope = (PT_voltages[sample_counter-1] - PT_voltages[sample_counter-2]);
+
+      if( current_slope > 0  && previous_slope > 0 )
+      {  // Accumulate slopes
+          count_pos_slopes++;
           acc_pos_slopes += current_slope;
-          
       }
-      
+
       if( current_slope <= 0 )
       {
-        count_pos_slopes = 0;
-        acc_pos_slopes   = 0;
-      }      
-      
+          count_pos_slopes = 0;
+          acc_pos_slopes   = 0;
+      }
+
       // If the number of positive slopes and their accumulated value are greater than
       // these respective thresholds, we say that we have found the positive edge of the phototransistor response
-      // OR if the rise from one sample to the other is very high, higher than the 'accumulated' threshold
-      if( ( ( count_pos_slopes >= THRESH_COUNT_SLOPES &&  acc_pos_slopes > threshold ) || current_slope > threshold) && timeout == 0 && sample_counter>=LED_START)
+      if( ( count_pos_slopes >= THRESH_COUNT_SLOPES &&  acc_pos_slopes > threshold )
+          && !flag_detected && sample_counter >= i_ledON)
       {
         count_pos_slopes = 0;
         acc_pos_slopes   = 0;
-        
-        t_photoTransTrig=Timer1.read();
-        timeout=NUM_SAMPLES; 
+
+        t_photoTransTrig = Timer1.read();
         flag_detected = HIGH;
-        
-        
-      }else{
-        if(timeout>0){timeout--;}
-        else{timeout==0;}  
-      }   
-    }
-    
+      }
+
     sample_counter++;
-    
-    // disable timer2 compare interrupt, once the last sample of this frame is read.
+
+    // disable timer2 compare interrupt once the last sample of this frame is read
     if( sample_counter == (NUM_SAMPLES-1) )
-    {       
-       TIMSK2 &= ~(1 << OCIE2A); 
+    {
+       TIMSK2 &= ~(1 << OCIE2A);
        sampling_finished = HIGH;
     }
   }
@@ -163,85 +153,46 @@ ISR(TIMER2_COMPA_vect){ //timer2 interrupt
 void loop() {
   if( sampling_finished )
   {
-    //Serial1.println("1");
     //For Printing the raw values to Matlab
     if(RAW_VALUES)
     {
       for (unsigned int i = 0; i < NUM_SAMPLES; i++)
       {
-        Serial.println( val_A_in[i] );
-      }    
-    }
-    else
-    {
-    if(flag_detected)
-        {
-        if(t_photoTransTrig > t_ledTrig)
-        {
-          if(!MATLAB)
-           { 
-            Serial.print("Window Values: ");
-            for(int i=0;i<WINDOW_LENGTH;i++)
-            {Serial.print(val_A_in[sample_counter-WINDOW_LENGTH+i]);Serial.print(" ");};
-            Serial.print("End-to-End delay: ");
-	    //In the following line, 0.255 is the delay inherent to the delay measurement system. Needs to be subtracted.
-            Serial.print( (t_photoTransTrig - t_ledTrig)*0.008 - 0.255);
-            Serial.println("ms");
-            Serial.print(t_photoTransTrig);
-            Serial.print(", ");
-            Serial.println(t_ledTrig);
-           }else{
-//            e2edelay =     (t_photoTransTrig - t_ledTrig)*0.008 - 0.255;
-//            if(e2edelay < 10){Serial.print("0");}
-//            if(e2edelay < 100){Serial.print("0");}
-            Serial.println( (t_photoTransTrig - t_ledTrig)*0.008 - 0.255 );
-            Serial1.println(" ");
-            Serial1.println( (t_photoTransTrig - t_ledTrig)*0.008 - 0.255 );
-           }
-        }
-        else //In this case, a roll-over has happened
-        {
-          if(!MATLAB)
+        Serial.println( PT_voltages[i] );
+      }
+    }else{
+        if(flag_detected)
             {
-              Serial.print("Window Values: ");
-              for(int i=0;i<=WINDOW_LENGTH;i++)
-              {Serial.print(val_A_in[sample_counter-WINDOW_LENGTH+i]);Serial.print(" ");};
-              Serial.print("End-to-End delay: ");
-              Serial.print( (t_photoTransTrig + 65535 - t_ledTrig)*0.008 -0.255);
-              Serial.println("ms");
-              Serial.print("Roll Over! Values: ");
-              Serial.print(t_photoTransTrig);
-              Serial.print(", ");
-              Serial.println(t_ledTrig);
-            }else{
-              e2edelay =    (t_photoTransTrig + 65535 - t_ledTrig)*0.008 - 0.255;
-//            if(e2edelay < 10){Serial.print("0");}
-//            if(e2edelay < 100){Serial.print("0");}
-            Serial.println( (t_photoTransTrig + 65535 - t_ledTrig)*0.008 - 0.255 );
-            Serial1.println(" ");
-            Serial1.println( (t_photoTransTrig + 65535 - t_ledTrig)*0.008 - 0.255);
-            }
-          }
-        }
-        flag_detected = LOW;
-    }
-    
-//    delay(TIME_BETWEEN);
+                float g2gDelay;
+                if(t_photoTransTrig > t_ledTrig)
+                {  // Computing G2G delay. Multiplying with sample duration, subtracting system inherent delays from calibration
+                    g2gDelay = (t_photoTransTrig - t_ledTrig) * 0.008 - 0.255;
+                }else{ // In this case, a roll-over has taken place
+                    g2gDelay = (65535 + t_photoTransTrig - t_ledTrig) * 0.008 - 0.255;
+                }
+
+                // Printing G2G delay to USB serial conneciton
+                Serial.println( g2gDelay);
+                // Printing G2G delay to Bluetooth serial conneciton
+                Serial1.println(" ");
+                Serial1.println( g2gDelay);
+               }
+               flag_detected = LOW;
+           }
+
     delay(random(0.9*TIME_BETWEEN,1.1*TIME_BETWEEN));
-    
+
     sample_counter = 0;
-    timeout=0;
     sampling_finished = LOW;
-    // enable timer compare interrupt
     TIMSK2 |= (1 << OCIE2A);
-    
+
     // Creating the random LED triggers
-    randomSeed( analogRead(randomseed_A_in_Pin) );
-    i_ledON  = LED_START;//random( 50, NUM_SAMPLES*0.1 );
-    i_ledOFF = LED_END;//random( NUM_SAMPLES*0.85, NUM_SAMPLES*0.95 ); 
-    
+    randomSeed( analogRead(pin_Randomseed) );
+    i_ledON  = random( 50, NUM_SAMPLES*0.1 );
+    i_ledOFF = random( NUM_SAMPLES*0.85, NUM_SAMPLES*0.95 );
+
   }
-  
+
   //Turning off and on via the bluetooth device
   byte buf;
   int insize;
@@ -249,11 +200,11 @@ void loop() {
   {
     for (int i=0; i<insize; i++){
      buf = char(Serial1.read());
-    
+
     //Serial.println(insize);
     if(buf == 49) //Start message (1 in ASCCII)
     {
-      sample_counter = 0;    
+      sample_counter = 0;
       Serial.println("Started  ");
     }
     else //Quit/pause message (0 in ASCII):
@@ -276,7 +227,7 @@ void loop() {
         {
           if(buf == 100) //d in ASCII
           {
-           //Lower threshold 
+           //Lower threshold
            threshold--;
            Serial.println(threshold);
           }
@@ -295,8 +246,8 @@ void loop() {
           }
         }
       }
-    }
-    }
+     }
+   }
   }
 }
 
@@ -319,64 +270,64 @@ void setup_sampling_timer2()
 
   switch ( SAMPLING_RATE)  // 250, 1000, 2000 or 8000 sampling rate in Hz
   {
-    case 8000: 
+    case 8000:
     {
       // set compare match register for 8khz increments
       OCR2A = 249;// = (16*10^6) / (8000*8) - 1 (must be <256)
-          
+
       // turn on CTC mode
       TCCR2A |= (1 << WGM21);
-    
-      // 8 prescaler
-      TCCR2B |= (1 << CS21);   
 
-      break;      
-      
+      // 8 prescaler
+      TCCR2B |= (1 << CS21);
+
+      break;
+
     }
-    
+
     case 2000:
     {
       // set compare match register for 2khz increments
       OCR2A = 249;// = (16*10^6) / (2000*32) - 1 (must be <256)
-    
+
       // turn on CTC mode
       TCCR2A |= (1 << WGM21);
-      
+
       // 32 prescaler
-      TCCR2B |= (1 << CS21) | (1 << CS20);   
-      
+      TCCR2B |= (1 << CS21) | (1 << CS20);
+
       break;
     }
-    
+
     case 1000:
     {
       // set compare match register for 1khz increments
       OCR2A = 249;// = (16*10^6) / (1000*64) - 1 (must be <256)
-    
+
       // turn on CTC mode
       TCCR2A |= (1 << WGM21);
-      
+
       // 32 prescaler
-      TCCR2B |= (1 << CS22);   
-      
+      TCCR2B |= (1 << CS22);
+
       break;
     }
-    
+
     case 250:
     {
       // set compare match register for 250Hz increments
       OCR2A = 249;// = (16*10^6) / (250*256) - 1 (must be <256)
-    
+
       // turn on CTC mode
       TCCR2A |= (1 << WGM21);
-      
+
       // 32 prescaler
-      TCCR2B |= (1 << CS22) | (1 << CS21);   
-      
+      TCCR2B |= (1 << CS22) | (1 << CS21);
+
       break;
     }
   }
-  
+
   // enable timer compare interrupt
-  TIMSK2 |= (1 << OCIE2A);  
+  TIMSK2 |= (1 << OCIE2A);
 }
