@@ -69,4 +69,4 @@ Congratulations, you are now all set to do your very own Glass-to-Glass delay me
     }
 
 
-Further details about the measurement system are provided on [arXiv](https://arxiv.org/abs/1510.01134v1). Feel free to contact me (christoph.bachhuber@tum.de) in case you run into any difficulties.
+Further details about the measurement system are provided on [arXiv](https://arxiv.org/abs/1510.01134v1). Feel free to contact me (christoph dot bachhuber at tum dot de) in case you run into any difficulties.
