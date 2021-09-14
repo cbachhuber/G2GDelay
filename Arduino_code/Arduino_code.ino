@@ -13,6 +13,7 @@ Once that is done, all variables are reset and a new measurement is started.
 */
 
 // Filtering Options
+#define RAW_VALUES          0  // =1 prints the raw sample values read by the PT to the serial console.
 #define CRT_WINDOW         50  // The window length in samples, over which we maximize for CRT=1
 #define THRESH_COUNT_SLOPES 2  // Minimum number of samples required to acknowledge a rising edge
 #define THRESH_ACC_SLOPES  20  // Minimum sample value increase to acknowledge a rising edge
@@ -138,6 +139,7 @@ ISR(TIMER2_COMPA_vect){
         t_photoTransTrig = Timer1.read();
         flag_detected = HIGH;
       }
+    }
 
     sample_counter++;
 
