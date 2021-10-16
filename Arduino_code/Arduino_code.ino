@@ -49,7 +49,7 @@ const unsigned int timer1_period     = 65535;  // timer period in microseconds, 
 const unsigned int pin_LED              = 13;  // the index of the LED pin, see circuit.pdf
 const unsigned int pin_PT                = 5;  // PT analog input pin
 const unsigned int pin_Randomseed        = 0;  // Random seed for the time between measurements
-
+unsigned int randomSeedVal               = 0;  // Random value generated from multiple analog pin measurements
 
 void setup() {
   Serial.begin(115200);  // USB connection to PC
@@ -60,10 +60,18 @@ void setup() {
   // initialize the lightEmitterLED pin as an output:
   pinMode(pin_LED, OUTPUT);
 
-  setup_msmt_timer1();
-  setup_sampling_timer2();
+  // generate a random seed value by taking the LSB of 32 analogRead() measurements, see https://forum.arduino.cc/t/using-analogread-on-floating-pin-for-random-number-generator-seeding-generator/100936/3
+  for (int i=0;i<32;i++){
+    randomSeedVal = (randomSeedVal << 1) + (1 & analogRead(pin_Randomseed));
+  }
+  // this seed should only need to be generated once as it should last a few days, see https://www.reddit.com/r/arduino/comments/6saycn/random_sequence_length/
+  randomSeed(randomSeedVal);
+  
   i_ledON = random( 50, NUM_SAMPLES * 0.1 );  // Setting constrained random start time of the LED
   i_ledOFF = random( i_ledON + 10, NUM_SAMPLES*0.9 );  // Setting constrained random end time of the LED
+  
+  setup_msmt_timer1();
+  setup_sampling_timer2();
 }
 
 // This interrupt is called at the frequency defined in SAMPLING_RATE
@@ -189,7 +197,6 @@ void loop() {
     TIMSK2 |= (1 << OCIE2A);
 
     // Creating the random LED triggers
-    randomSeed( analogRead(pin_Randomseed) );
     i_ledON  = random( 50, NUM_SAMPLES*0.1 );
     i_ledOFF = random( NUM_SAMPLES*0.85, NUM_SAMPLES*0.95 );
 
