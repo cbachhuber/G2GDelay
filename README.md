@@ -21,7 +21,7 @@ For building the measurement device, you need the following parts, depicted in [
 - Optional: 9V battery. You don't have to use the 9V battery as power supply, instead you can for example connect the Arduino to a USB port.
 - Optional: A breadboard
 
-Next, connect the elements as in [Circuit.pdf](https://github.com/cbachhuber/G2GDelay/blob/master/Circuit.pdf). In [Circuit.pdf](https://github.com/cbachhuber/G2GDelay/blob/master/Circuit.pdf), the principle of the circuit is shown, you can simplify it and waive for example the breadboard.
+Next, connect the elements as in [Circuit.pdf](https://github.com/cbachhuber/G2GDelay/blob/master/Circuit.pdf). In [Circuit.pdf](https://github.com/cbachhuber/G2GDelay/blob/master/Circuit.pdf), the principle of the circuit is shown, you can simplify it and waive for example the breadboard. Make sure that pin A0 is not connected to anything (or pick a new analog pin for it) - it needs to be floating for the randomness to work properly.
 
 ## Arduino source code
 
