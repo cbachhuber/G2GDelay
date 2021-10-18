@@ -138,7 +138,7 @@ ISR(TIMER2_COMPA_vect){
 
       // If the number of positive slopes and their accumulated value are greater than
       // these respective thresholds, we say that we have found the positive edge of the phototransistor response
-      if( ( count_pos_slopes >= THRESH_COUNT_SLOPES &&  acc_pos_slopes > threshold )
+      if ( ( ( count_pos_slopes >= THRESH_COUNT_SLOPES &&  acc_pos_slopes > threshold ) || current_slope > threshold)
           && !flag_detected && sample_counter >= i_ledON)
       {
         count_pos_slopes = 0;
