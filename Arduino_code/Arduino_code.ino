@@ -68,7 +68,7 @@ void setup() {
   randomSeed(randomSeedVal);
   
   i_ledON = random( 50, NUM_SAMPLES * 0.1 );  // Setting constrained random start time of the LED
-  i_ledOFF = random( i_ledON + 10, NUM_SAMPLES*0.9 );  // Setting constrained random end time of the LED
+  i_ledOFF = random( NUM_SAMPLES*0.85, NUM_SAMPLES*0.95 );  // Setting constrained random end time of the LED
   
   setup_msmt_timer1();
   setup_sampling_timer2();
