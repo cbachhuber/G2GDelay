@@ -1,6 +1,6 @@
 # Glass to Glass Delay Measurement System
 
-This repository contains all the information and software you need to build your own Glass-to-Glass delay measurement system. You also need the hardware detailed in the [Construction Manual](#construction-manual) below. There are three main components in this folder: the circuit layout (file [Circuit.pdf](Circuit.pdf)) for the measurement device, the Arduino source code (in folder [Arduino_code](Arduino_code)) and the optional Android Application (in folder [Android_App](Android_App)). 
+This repository contains all the information and software you need to build your own Glass-to-Glass delay measurement system. You also need the hardware detailed in the [Construction Manual](#construction-manual) below. There are three main components in this folder: the circuit layout (file [Circuit.pdf](Circuit.pdf)) for the measurement device, the Arduino source code (in folder [Arduino_code](Arduino_code)) and the optional Android Application (in folder [Android_App](Android_App)).
 
 You have three options for retrieving G2G delay values from the Arduino:
 - Quickest setup: Connect the measurement system to a computer via USB, and use the serial monitor from Arduino's IDE to retrieve G2G delay values.
@@ -41,7 +41,7 @@ To view the measurements using the provided Anroid app, first copy the file [G2G
 When taking measurements with the Arduino IDE or the python script, connect the Arduino to the USB port of a computer. For use with the Android app, from some users we heard that the USB port of a laptop/PC might not give enough power for bluetooth. In that case, the bluetooth connection will not be stable. Connect the Arduino to another power source, such as a smartphone charger or a 9V battery.
 
 ### Phototransistor Placement
-I strongly recommend to align the Phototransistor directly to the LED in the beginning. The phototransistor has a little knob on one side, this should point towards the LED and be very close to it, the know may even touch the LED. This way, you can check whether the Phototransistor is correctly connected to the circuit. You should see samples with a delay of 0 milliseconds. This makes sense because there is nothing delaying the propagation of light between the LED and Phototransistor. 
+I strongly recommend to align the Phototransistor directly to the LED in the beginning. The phototransistor has a little knob on one side, this should point towards the LED and be very close to it, the know may even touch the LED. This way, you can check whether the Phototransistor is correctly connected to the circuit. You should see samples with a delay of 0 milliseconds. This makes sense because there is nothing delaying the propagation of light between the LED and Phototransistor.
 
 ### LED Placement
 Next, for testing the G2G latency of a video transmission system (e.g. your smartphone, with the camera application started), you can put the LED in the field of view of a camera and put the PT on the corresponding display where the LED is shown. Make sure to place the PT on the LED and let the knob on the PT face towards the screen.
@@ -55,11 +55,7 @@ Run the Arduino IDE and open the serial monitor, you will be able to directly vi
 ### Python Script
 The python3 script [delayrecorder.py](delayrecorder.py) will by default take 100 measurements, write to a CSV file called `results.csv`, pop up a histogram with some statistics (mean, median, standard deviation, minimum value, maximum value), and save it to `results.png`. This script also allows you to view previously saved measurements.
 
-Input arguments:
-- You can specify the filename and the number of measurements with input arguments: `./delayrecorder.py <filename.csv> <num_measurements>`
-- Calling the script with modifier `--help` or `-h` will explain the script's functionality
-- Calling the script with modifier `--quiet` or `-q` will run the script, but instead of printing a new line with the measurement value each time, it will on the same line indicate the current iteration and how many more measurements there are
-- Calling the script with the modifier `--readcsv` or `-r` will tell the script to read a previously written CSV file and plot the results from that, rather than taking new measurements
+You can call `delayrecorder.py` with the target number of measurements and with flags to make it less verbose or to read a previously written CSV file. Call `delayrecorder.py -h` for more usage details.
 
 ### Android Device
 Start the Android application, allow it to control the bluetooth adaptor of your Android device, open the side menu and go to 'device management'. If the Arduino is not yet paired with your phone or tablet, search for it. Tap on 'HC-05' to connect to your measurement device (if this is the first time to connect, you have to enter the security code, which is usually 1234 or 0000). Now you can go to live measurement in the side menu and start the measurement using the top right dots.
