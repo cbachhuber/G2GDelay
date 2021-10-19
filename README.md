@@ -25,7 +25,7 @@ Next, connect the elements as in [Circuit.pdf](https://github.com/cbachhuber/G2G
 
 ## Arduino source code
 
-[Download the Arduino IDE](https://www.arduino.cc/en/Main/Software), open the Arduino_code project and install the libraries PinChangeInt and TimerOne (both reside in the folder [Arduino_code](https://github.com/cbachhuber/G2GDelay/tree/master/Arduino_code)). Now, you can compile and upload the code to the Arduino board via USB.
+[Download the Arduino IDE](https://www.arduino.cc/en/Main/Software), open the Arduino_code project and install the TimerOne library (which resides in the folder [Arduino_code](https://github.com/cbachhuber/G2GDelay/tree/master/Arduino_code)). Now, you can compile and upload the code to the Arduino board via USB.
 
 ## Measuring with Computer
 

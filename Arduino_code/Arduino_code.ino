@@ -1,4 +1,3 @@
-#include <PinChangeInt.h>	// http://www.arduino.cc/playground/Main/PinChangeInt
 #include <TimerOne.h>		// http://www.arduino.cc/playground/Code/Timer1
 
 /* PROGRAM OVERVIEW
