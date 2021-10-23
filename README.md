@@ -27,7 +27,7 @@ Next, connect the elements as in [Circuit.pdf](Circuit.pdf). In `Circuit.pdf`, t
 ## Software Setup
 
 ### Arduino Source Code
-To program the device, download and install the [Arduino IDE](https://www.arduino.cc/en/Main/Software). Install the two libraries (`PinChangeInt` and `TimerOne`) provided in the [Arduino_code](Arduino_code) folder. For compatibility, be sure to use the ones which were provided rather than installing via the libary manager or by finding them online.
+To program the device, download and install the [Arduino IDE](https://www.arduino.cc/en/Main/Software) and install the TimerOne library provided in the [Arduino_code](Arduino_code) folder. For compatibility, be sure to use the one which was provided rather than installing via the libary manager or by finding it online. Now you can compile and upload the code to the Arduino board via USB.
 
 ### Python Script
 To view the measurements using the provided script, install `python3` and ensure you have python modules `pyserial`, `matplotlib`, and `numpy`.
