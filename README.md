@@ -1,6 +1,6 @@
 # Glass to Glass Delay Measurement System
 
-![Build](https://github.com/cbachhuber/G2GDelay/actions/workflows/build_arduino_code/badge.svg)
+![Build](https://github.com/cbachhuber/G2GDelay/actions/workflows/build_arduino_code.yml/badge.svg)
 
 This repository contains all the information and software you need to build your own Glass-to-Glass delay measurement system. You also need the hardware detailed in the [Construction Manual](https://github.com/cbachhuber/G2GDelay#construction-manual) below. There are three main components in this folder: the circuit layout (file [Circuit.pdf](https://github.com/cbachhuber/G2GDelay/blob/master/Circuit.pdf)) for the measurement device, the Arduino source code (in folder [Arduino_code](https://github.com/cbachhuber/G2GDelay/tree/master/Arduino_code)) and the optional Android Application (in folder [Android_app](https://github.com/cbachhuber/G2GDelay/tree/master/Android_App)). 
 
