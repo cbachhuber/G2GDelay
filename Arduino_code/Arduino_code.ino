@@ -7,7 +7,7 @@
   detects a sudden brightness increase (turning on LED visible at PT) at the PT. If this is
   detected, the interrupt loop sets flag_detected and records a time stamp. The main Arduino
   loop() always checks whether flag_detected has been set. If this is the case, the main loop
-  computes the G2G delay and reports it over both the USB and the Bluetooth serial connections.
+  computes the G2G delay and reports it over the USB connection.
   Once that is done, all variables are reset and a new measurement is started.
 */
 
@@ -30,14 +30,11 @@ unsigned int  PT_voltages[NUM_SAMPLES] = {0};  // Vector of voltages read from t
 unsigned int  storage[CRT_WINDOW]  	   = {0};  // Vector of temporally stored samples for filtering
 byte          count_pos_slopes         = {0};  // Number of successive positive slope samples
 byte          acc_pos_slopes           = {0};  // Accumulated values of successive positive slope samples
-/* Set sample_counter to zero if sampling shall start right away, to NUM_SAMPLES if you want to get the
-  start signal via bluetooth */
-unsigned int  sample_counter           = {0};
+unsigned int  sample_counter           = {0};  // Must be zero to start sampling
 bool          sampling_finished        = LOW;  // Is set to true if sampling is finished
 bool          flag_detected            = LOW;  // Is set to true if the PT detected that the LED was turned on.
 unsigned int  i_ledON;                         // Sample at which the LED is turned on. Will be random.
 unsigned int  i_ledOFF;                        // Sample at which the LED is turned off. Will be random.
-short threshold          = THRESH_ACC_SLOPES;  // Set for now, can be changed from android software later
 
 // Timestamps that will be measured with Timer1
 unsigned int  t_ledTrig                = {0};  // When the LED was triggered
@@ -53,8 +50,6 @@ unsigned int randomSeedVal               = 0;  // Random value generated from mu
 void setup() {
   Serial.begin(115200);  // USB connection to PC
   Serial.println();  // warm up the serial port
-
-  Serial1.begin(9600);  // Bluetooth connection
 
   // initialize the lightEmitterLED pin as an output:
   pinMode(pin_LED, OUTPUT);
@@ -136,7 +131,7 @@ ISR(TIMER2_COMPA_vect) {
       // If the number of positive slopes and their accumulated value are greater than
       // these respective thresholds, we say that we have found the positive edge of the phototransistor response
       // OR if the rise from one sample to the other is very high, higher than the 'accumulated' threshold
-      if ( ( ( count_pos_slopes >= THRESH_COUNT_SLOPES &&  acc_pos_slopes > threshold ) || current_slope > threshold)
+      if ( ( ( count_pos_slopes >= THRESH_COUNT_SLOPES &&  acc_pos_slopes > THRESH_ACC_SLOPES ) || current_slope > THRESH_ACC_SLOPES)
            && !flag_detected && sample_counter >= i_ledON )
       {
         count_pos_slopes = 0;
@@ -182,12 +177,7 @@ void loop() {
         { // In this case, a roll-over has taken place
           g2gDelay = (65535 + t_photoTransTrig - t_ledTrig) * 0.008 - 0.255;
         }
-
-        // Printing G2G delay to USB serial conneciton
         Serial.println(g2gDelay);
-        // Printing G2G delay to Bluetooth serial conneciton
-        Serial1.println(" ");
-        Serial1.println(g2gDelay);
       }
       flag_detected = LOW;
     }
@@ -202,64 +192,6 @@ void loop() {
     i_ledON  = random( 50, NUM_SAMPLES * 0.1 );
     i_ledOFF = random( NUM_SAMPLES * 0.85, NUM_SAMPLES * 0.95 );
   }
-
-  // Turning off and on via the bluetooth device
-  byte buf;
-  int insize;
-  if ((insize = Serial1.available()) > 0)
-  {
-    for (int i = 0; i < insize; i++) {
-      buf = char(Serial1.read());
-
-      //Serial.println(insize);
-      if (buf == 49) // Start message (1 in ASCCII)
-      {
-        sample_counter = 0;
-        Serial.println("Started  ");
-      }
-      else // Quit/pause message (0 in ASCII):
-      {
-        if (buf == 48)
-        {
-          sample_counter = NUM_SAMPLES;
-          Serial.println("Stopped.");
-          delay(100); // To prevent the interrupt starting right away
-        }
-        else // Other signals: for now only threshold changes
-        {
-          if (buf == 117) // u in ASCII
-          {
-            // Raise threshold
-            threshold++;
-            Serial.println(threshold);
-          }
-          else
-          {
-            if (buf == 100) // d in ASCII
-            {
-              // Lower threshold
-              threshold--;
-              Serial.println(threshold);
-            }
-            else
-            {
-              if (buf == 114) // r in ASCII
-              {
-                // Reset threshold
-                threshold = THRESH_ACC_SLOPES;
-                Serial.println("Threshold reset.");
-              }
-              else
-              {
-                // Further signals
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
 
 
 void setup_msmt_timer1()
