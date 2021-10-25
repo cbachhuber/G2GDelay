@@ -12,7 +12,7 @@ Even quicker: use the serial monitor of Arduino's IDE to retrieve G2G delay valu
 
 ## Construction Manual
 
-For building the measurement device, you need the following parts, depicted in [Circuit.pdf](https://github.com/cbachhuber/G2GDelay/blob/master/Circuit.pdf):
+For building the measurement device, you need the following parts
 
 - Arduino Mega 2560: Does not have to be original Arduino, can also be e.g. a SunFounder Mega 2560
 - LED: A Light-emitting diode, e.g. LED 5-4500 RT
@@ -21,9 +21,14 @@ For building the measurement device, you need the following parts, depicted in [
 - Cables
 - Optional: A breadboard
 
-Next, connect the elements as in [Circuit.pdf](https://github.com/cbachhuber/G2GDelay/blob/master/Circuit.pdf).
-Previous versions used a 9V battery and a bluetooth transceiver (HC-05), which aren't used anymore, so you can ignore them and related cabeling in your construction.
-In [Circuit.pdf](https://github.com/cbachhuber/G2GDelay/blob/master/Circuit.pdf), the principle of the circuit is shown, you can simplify it and waive for example the breadboard.
+Next, connect the elements as such:
+
+<p align="center">
+  <img width="960" src="./circuit.svg">
+</p>
+
+
+You can simplify the above circuit and waive for example the breadboard.
 Make sure that pin A0 is not connected to anything (or pick a new analog pin for it) - it needs to be floating for the randomness to work properly.
 
 ## Arduino source code
