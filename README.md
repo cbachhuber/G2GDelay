@@ -2,10 +2,8 @@
 
 ![Build](https://github.com/cbachhuber/G2GDelay/actions/workflows/build_arduino_code.yml/badge.svg)
 
-This repository contains all the information and software you need to build your own Glass-to-Glass delay measurement system. You also need the hardware detailed in the [Construction Manual](https://github.com/cbachhuber/G2GDelay#construction-manual) below. There are two main components in this folder
-
-1.  [Circuit layout](https://github.com/cbachhuber/G2GDelay/blob/master/Circuit.pdf)) for the measurement device
-1. Arduino source code, in folder [Arduino_code](https://github.com/cbachhuber/G2GDelay/tree/master/Arduino_code)
+This repository contains all the information and software you need to build your own Glass-to-Glass (G2G) delay measurement system.
+In addition to software, you need the hardware detailed in the [Construction Manual](https://github.com/cbachhuber/G2GDelay#construction-manual) below.
 
 For retrieving G2G delay values from the Arduino, connect the measurement system to a computer via USB, and use [delayrecorder.py](https://github.com/cbachhuber/G2GDelay/blob/master/delayrecorder.py) to guide you through the measurement process.
 Even quicker: use the serial monitor of Arduino's IDE to retrieve G2G delay values.
