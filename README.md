@@ -40,7 +40,7 @@ The quickest way to get measurements is connecting the arduino to a computer usi
 
 ## Starting Measurements
 
-I strongly recommend to align the Phototransistor directly to the LED in the beginning. The phototransistor has a little knob on one side, this should point towards the LED and be very close to it, the know may even touch the LED. This way, you can check whether the Phototransistor is correctly connected to the circuit. You should see samples with a delay of 0 milliseconds. This makes sense because there is nothing delaying the propagation of light between the LED and Phototransistor. 
+I strongly recommend to align the phototransistor (PT) directly to the LED in the beginning. The PT has a little bump on one side, this should point towards the LED and be very close to it and even touch the LED. This way, you can check whether the PT is correctly connected to the circuit. You should see samples with a delay of 0.00 milliseconds. This makes sense because there is nothing delaying the propagation of light between the LED and PT. 
 
 Next, for testing the G2G latency of a video transmission system (e.g. your smartphone, with the camera application started), you can put the LED in the field of view of a camera and put the PT on the corresponding display where the LED is shown. Make sure to place the PT on the LED and let the knob on the PT face towards the screen. 
 
