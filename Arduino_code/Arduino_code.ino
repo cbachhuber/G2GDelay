@@ -192,6 +192,7 @@ void loop() {
     i_ledON  = random( 50, NUM_SAMPLES * 0.1 );
     i_ledOFF = random( NUM_SAMPLES * 0.85, NUM_SAMPLES * 0.95 );
   }
+}
 
 
 void setup_msmt_timer1()
