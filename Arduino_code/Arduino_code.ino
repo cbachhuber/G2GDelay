@@ -26,8 +26,8 @@
 #define TIME_BETWEEN      645  // Time between two measurements, in milliseconds. Do not change.
 
 // Global variables
-unsigned int  PT_voltages[NUM_SAMPLES] = 0;  // Vector of voltages read from the pin_PT
-unsigned int  storage[CRT_WINDOW]  	   = 0;  // Vector of temporally stored samples for filtering
+unsigned int  PT_voltages[NUM_SAMPLES] = {0};  // Vector of voltages read from the pin_PT
+unsigned int  storage[CRT_WINDOW]  	   = {0};  // Vector of temporally stored samples for filtering
 byte          count_pos_slopes         = 0;  // Number of successive positive slope samples
 byte          acc_pos_slopes           = 0;  // Accumulated values of successive positive slope samples
 unsigned int  sample_counter           = 0;  // Must be zero to start sampling
