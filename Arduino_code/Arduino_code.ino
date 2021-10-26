@@ -26,19 +26,19 @@
 #define TIME_BETWEEN      645  // Time between two measurements, in milliseconds. Do not change.
 
 // Global variables
-unsigned int  PT_voltages[NUM_SAMPLES] = {0};  // Vector of voltages read from the pin_PT
-unsigned int  storage[CRT_WINDOW]  	   = {0};  // Vector of temporally stored samples for filtering
-byte          count_pos_slopes         = {0};  // Number of successive positive slope samples
-byte          acc_pos_slopes           = {0};  // Accumulated values of successive positive slope samples
-unsigned int  sample_counter           = {0};  // Must be zero to start sampling
+unsigned int  PT_voltages[NUM_SAMPLES] = 0;  // Vector of voltages read from the pin_PT
+unsigned int  storage[CRT_WINDOW]  	   = 0;  // Vector of temporally stored samples for filtering
+byte          count_pos_slopes         = 0;  // Number of successive positive slope samples
+byte          acc_pos_slopes           = 0;  // Accumulated values of successive positive slope samples
+unsigned int  sample_counter           = 0;  // Must be zero to start sampling
 bool          sampling_finished        = LOW;  // Is set to true if sampling is finished
 bool          flag_detected            = LOW;  // Is set to true if the PT detected that the LED was turned on.
 unsigned int  i_ledON;                         // Sample at which the LED is turned on. Will be random.
 unsigned int  i_ledOFF;                        // Sample at which the LED is turned off. Will be random.
 
 // Timestamps that will be measured with Timer1
-unsigned int  t_ledTrig                = {0};  // When the LED was triggered
-unsigned int  t_photoTransTrig         = {0};  // When a brightness increase was noted at the PT
+unsigned int  t_ledTrig                = 0;  // When the LED was triggered
+unsigned int  t_photoTransTrig         = 0;  // When a brightness increase was noted at the PT
 
 //Timer settings and pin assignments
 const unsigned int timer1_period     = 65535;  // timer period in microseconds, see http://playground.arduino.cc/code/timer1
