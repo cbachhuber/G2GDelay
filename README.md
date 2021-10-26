@@ -1,64 +1,58 @@
 # Glass to Glass Delay Measurement System
 
-This repository contains all the information and software you need to build your own Glass-to-Glass delay measurement system. You also need the hardware detailed in the [Construction Manual](#construction-manual) below. There are three main components in this folder: the circuit layout (file [Circuit.pdf](Circuit.pdf)) for the measurement device, the Arduino source code (in folder [Arduino_code](Arduino_code)) and the optional Android Application (in folder [Android_App](Android_App)).
+![Build](https://github.com/cbachhuber/G2GDelay/actions/workflows/build_arduino_code.yml/badge.svg)
 
-You have three options for retrieving G2G delay values from the Arduino:
-- Quickest setup: Connect the measurement system to a computer via USB, and use the serial monitor from Arduino's IDE to retrieve G2G delay values.
-- Relatively simple setup, convenient usage: Connect the measurement system to a computer via USB, and use [delayrecorder.py](delayrecorder.py) to generate a CSV file and histogram plot (and PNG) of the results with statistics.
-- More complex setup, very convenient usage: instead of using a computer, connect the Arduino to an Android device using Bluetooth. The provided Android application will guide the user throught the measurement process.
+This repository contains all the information and software you need to build your own Glass-to-Glass delay measurement system. You will need the hardware detailed in the [Construction Manual](#construction-manual) below. After that, follow the [software setup](#software-setup) and [hardware setup](#hardware-setup) and you'll be good to go to [take some measurements](#taking-measurements)!
 
-The instructions for each option are given below. The setup steps for building the measurement system itself are described in the following:
+There are three main components in this repository: the circuit layout (file [circuit.svg](circuit.svg)) for the measurement device, the Arduino source code (in folder [Arduino_code](Arduino_code)) and a Python script for taking measurements and plotting them with statistics (file [delayrecorder.py](delayrecorder.py)). The quickest way to view measurements is to read the values directly from the Arduino IDE's Serial Monitor, and the most convenient is to run the script.
 
 ## Construction Manual
 
-For building the measurement device, you need the following parts, depicted in [Circuit.pdf](Circuit.pdf):
-
+For building the measurement device, you need the following parts:
 - Arduino Mega 2560: Does not have to be original Arduino, can also be e.g. a SunFounder Mega 2560
 - LED: A Light-emitting diode, e.g. LED 5-4500 RT
 - Phototransistor: For example the SDP 8406-003
 - Resistor 11kOhm: Any 11kOhm resistor will do the job, e.g. the 1/4W 11K
-- Cables
-- Optional for Bluetooth usage: HC-05. For example the Aukru HC-05 Wireless-Bluetooth-Host Serial-Transceiver-Module
-- Optional: 9V battery. You don't have to use the 9V battery as power supply, instead you can for example connect the Arduino to a USB port.
+- Wires
 - Optional: A breadboard
 
-Next, connect the elements as in [Circuit.pdf](Circuit.pdf). In `Circuit.pdf`, the principle of the circuit is shown, you can simplify it and waive for example the breadboard. Make sure that pin A0 is not connected to anything (or pick a new analog pin for it) - it needs to be floating for the randomness to work properly.
+Next, connect the elements as such:
+
+<p align="center">
+  <img width="960" src="./circuit.svg">
+</p>
+
+You can simplify the above circuit and waive for example the breadboard.
+Make sure that pin A0 is not connected to anything (or pick a new analog pin for it) - it needs to be floating for the randomness to work properly.
 
 ## Software Setup
 
 ### Arduino Source Code
-To program the device, download and install the [Arduino IDE](https://www.arduino.cc/en/Main/Software) and install the TimerOne library provided in the [Arduino_code](Arduino_code) folder. For compatibility, be sure to use the one which was provided rather than installing via the libary manager or by finding it online. Now you can compile and upload the code to the Arduino board via USB.
+To program the device, download and install the [Arduino IDE](https://www.arduino.cc/en/Main/Software). From the IDE, you can compile the code and then upload the binary to the Arduino board via USB.
 
 ### Python Script
-To view the measurements using the provided script, install `python3` and ensure you have python modules `pyserial`, `matplotlib`, and `numpy`.
-
-### Android Application
-To view the measurements using the provided Anroid app, first copy the file [G2GDelay.apk](Android_App/G2GDelay.apk) to your Android device running Android 5.0 or higher. Make sure to enable the option 'Unknown Sources' in `System Settings/Security` before attempting to install the APK.
+To be able to view the measurements using the provided script, install `python3` and ensure you have python modules `pyserial`, `matplotlib`, and `numpy`.
 
 ## Hardware Setup
 
 ### Powering the Device
-When taking measurements with the Arduino IDE or the python script, connect the Arduino to the USB port of a computer. For use with the Android app, from some users we heard that the USB port of a laptop/PC might not give enough power for bluetooth. In that case, the bluetooth connection will not be stable. Connect the Arduino to another power source, such as a smartphone charger or a 9V battery.
+Connect the Arduino to the USB port of a computer.
 
 ### Phototransistor Placement
-I strongly recommend to align the Phototransistor directly to the LED in the beginning. The phototransistor has a little knob on one side, this should point towards the LED and be very close to it, the know may even touch the LED. This way, you can check whether the Phototransistor is correctly connected to the circuit. You should see samples with a delay of 0 milliseconds. This makes sense because there is nothing delaying the propagation of light between the LED and Phototransistor.
+I strongly recommend to align the Phototransistor (PT) directly to the LED in the beginning. The PT has a little bump on one side, this should point towards the LED and be very close to it and even touch the LED. This way, you can check whether the PT is correctly connected to the circuit. You should see samples with a delay of 0.00 milliseconds. This makes sense because there is nothing delaying the propagation of light between the LED and PT
 
 ### LED Placement
-Next, for testing the G2G latency of a video transmission system (e.g. your smartphone, with the camera application started), you can put the LED in the field of view of a camera and put the PT on the corresponding display where the LED is shown. Make sure to place the PT on the LED and let the knob on the PT face towards the screen.
+Next, for testing the G2G latency of a video transmission system (e.g. your smartphone, with the camera application started), you can put the LED in the field of view of a camera and put the PT on the corresponding display where the LED is shown. Make sure to place the PT on the LED and let the bump on the PT face towards the screen.
 
 ## Taking Measurements
+
 Once a program establishes communication with the Arduino, the LED should light up twice in the beginning, signalling that the Arduino started without an error. If it doesn't, try to flip the polarity of the LED contacts.
 
 ### Arduino IDE
-Run the Arduino IDE and open the serial monitor, you will be able to directly view the delay measurements.
+This is the quickest way to get measurements. Run the Arduino IDE and open the Serial Monitor, you will be able to directly view the delay measurements.
 
 ### Python Script
-The python3 script [delayrecorder.py](delayrecorder.py) will by default take 100 measurements, write to a CSV file called `results.csv`, pop up a histogram with some statistics (mean, median, standard deviation, minimum value, maximum value), and save it to `results.png`. This script also allows you to view previously saved measurements.
-
-You can call `delayrecorder.py` with the target number of measurements and with flags to make it less verbose or to read a previously written CSV file. Call `delayrecorder.py -h` for more usage details.
-
-### Android Device
-Start the Android application, allow it to control the bluetooth adaptor of your Android device, open the side menu and go to 'device management'. If the Arduino is not yet paired with your phone or tablet, search for it. Tap on 'HC-05' to connect to your measurement device (if this is the first time to connect, you have to enter the security code, which is usually 1234 or 0000). Now you can go to live measurement in the side menu and start the measurement using the top right dots.
+This is a convenient way to observe and interpret measurements. [delayrecorder.py](delayrecorder.py) will take the desired filename and number of measurements, and it will generate a histogram with statistics and save the results. You can call it with `./delayrecorder.py -h` for more usage details and other options.
 
 ## Troubleshooting
 
