@@ -166,12 +166,11 @@ def plot_results(measurements, stats, fig_name):
     print(f"Saved histogram to {fig_name}")
     plt.show()
 
-if __name__ == "__main__":
+def main():
     # Set up signal handler to handle keyboard interrupts
     signal.signal(signal.SIGINT, sigint_handler)
 
     args = parse_arguments() # parse command line input arguments
-    filename = args.filename.name # obtain the filename as a string, not a PosixPath
     file_extension = args.filename.suffix
     if file_extension != '.csv':
         print("Error: Provided filename is invalid or does not have .csv extension")
@@ -181,15 +180,17 @@ if __name__ == "__main__":
     fig_name = args.filename.with_suffix('.png').name
     if not args.readcsv:
         g2g_delays = get_measurements_serial(args.num_measurements, args.quiet)
-        # Post-processing
         time.sleep(.1)
         # this function returns g2g_delays as a numpy array
         g2g_delays, stats = generate_stats(g2g_delays)
-        write_measurements_csv(filename, g2g_delays, stats)
+        write_measurements_csv(args.filename, g2g_delays, stats)
     else:
-        print(f"Reading data from {filename}")
+        print(f"Reading data from {args.filename}")
         # this function returns g2g_delays as a list
-        g2g_delays, stats = get_measurements_csv(filename)
+        g2g_delays, stats = get_measurements_csv(args.filename)
 
     # save plot to a png file and display it. Data type doesn't seem to matter
     plot_results(g2g_delays, stats, fig_name)
+
+if __name__ == "__main__":
+    main()
