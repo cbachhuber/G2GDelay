@@ -1,4 +1,4 @@
-#include <TimerOne.h>		// http://www.arduino.cc/playground/Code/Timer1
+#include "TimerOne.h"		// http://www.arduino.cc/playground/Code/Timer1
 
 /* PROGRAM OVERVIEW
   Conceptually, this program works as follows: parallel to the usual Arduino loop(), there runs
