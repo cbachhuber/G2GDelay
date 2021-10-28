@@ -29,17 +29,20 @@ def sigint_handler(signal, frame):
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
-        description="This script obtains delay measurements from a Glass-to-Glass device connected via USB, saves results and statistics to a CSV file, and displays the results in a histogram plot. You can also use it to display results from saved measurements in a previous test, in which case the CSV file is read from rather than written to."
+        description="This script obtains delay measurements from a Glass-to-Glass device connected via USB, "
+        "saves results and statistics to a CSV file, and displays the results in a histogram plot. "
+        "You can also use it to display results from saved measurements in a previous test, in which case "
+        "the CSV file is read from rather than written to."
     )
-
     parser.add_argument(
         "filename",
         nargs="?",
         default="results.csv",
         type=Path,
-        help="The name of the CSV file where the data is saved. It is also the name for the saved plot. Default is 'results.csv' which will cause 'results.png' to be created as well. This is the filename used when using the '--readcsv' option as well.",
+        help="The name of the CSV file where the data is saved. It is also the name for the saved plot. "
+        "Default is 'results.csv' which will cause 'results.png' to be created as well. "
+        "This is the filename used when using the '--readcsv' option as well.",
     )
-
     parser.add_argument(
         "num_measurements",
         nargs="?",
@@ -47,21 +50,19 @@ def parse_arguments():
         type=int,
         help="An integer for the number of measurements to save and use when generating statistics. Default is 100.",
     )
-
     parser.add_argument(
         "--quiet",
         "-q",
         action="store_true",
         help="The script won't print the measurements to the terminal (but will still save them into the CSV file).",
     )
-
     parser.add_argument(
         "--readcsv",
         "-r",
         action="store_true",
-        help="Reads a previously generated CSV and plots it. Be sure to provide the name of the CSV file if it's not the default name.",
+        help="Reads a previously generated CSV and plots it. "
+        "Be sure to provide the name of the CSV file if it's not the default name.",
     )
-
     return parser.parse_args()
 
 
@@ -116,11 +117,15 @@ def get_measurements_serial(num_measurements, quiet_mode):
         else:
             if overall_rounds > 0 and init_message == 1:
                 print(
-                    "Did not receive msmt data from the Arduino for another 5 seconds. Is the phototransistor still sensing the LED?"
+                    "Did not receive msmt data from the Arduino for another 5 seconds. "
+                    "Is the phototransistor still sensing the LED?"
                 )
             else:
                 print(
-                    "Did not receive msmt data from the Arduino for 5 seconds. \n Is the phototransistor sensing the LED on the screen? \n Is the correct side of the PT pointing towards the screen (the flat side with the knob on it)? \n Is the screen brightness high enough (max recommended)?"
+                    """Did not receive msmt data from the Arduino for 5 seconds.
+Is the phototransistor sensing the LED on the screen?
+Is the correct side of the PT pointing towards the screen (the flat side with the knob on it)?
+Is the screen brightness high enough (max recommended)?"""
                 )
                 init_message = 1
 
@@ -232,14 +237,12 @@ def main():
     # Set up signal handler to handle keyboard interrupts
     signal.signal(signal.SIGINT, sigint_handler)
 
-    args = parse_arguments()  # parse command line input arguments
-    file_extension = args.filename.suffix
-    if file_extension != ".csv":
+    args = parse_arguments()
+    if args.filename.suffix != ".csv":
         print("Error: Provided filename is invalid or does not have .csv extension")
         sys.exit()
 
     # Either write the data to a CSV file or read from a preexisting one
-    fig_name = args.filename.with_suffix(".png").name
     if not args.readcsv:
         g2g_delays = get_measurements_serial(args.num_measurements, args.quiet)
         time.sleep(0.1)
@@ -252,6 +255,7 @@ def main():
         g2g_delays, stats = get_measurements_csv(args.filename)
 
     # save plot to a png file and display it. Data type doesn't seem to matter
+    fig_name = args.filename.with_suffix(".png").name
     plot_results(g2g_delays, stats, fig_name)
 
 
