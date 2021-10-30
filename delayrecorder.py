@@ -63,7 +63,12 @@ def parse_arguments():
         help="Reads a previously generated CSV and plots it. "
         "Be sure to provide the name of the CSV file if it's not the default name.",
     )
-    return parser.parse_args()
+
+    args = parser.parse_args()
+    if args.filename.suffix != ".csv":
+        print("Error: Provided filename is invalid or does not have .csv extension")
+        sys.exit(-1)
+    return args
 
 
 def find_arduino_on_serial_port():
@@ -135,20 +140,17 @@ Is the screen brightness high enough (max recommended)?"""
 def write_measurements_csv(filename, measurements, stats):
     with open(filename, "w") as f:
         writer = csv.writer(f)
-
-        header = ["Samples", "Min", "Max", "Mean", "Median", "stdDev"]
-        writer.writerow(header)
-
-        stats_list = [
-            stats.num_measurements,
-            stats.min_delay,
-            stats.max_delay,
-            stats.mean_delay,
-            stats.median_delay,
-            stats.std_dev,
-        ]
-        writer.writerow(stats_list)
-
+        writer.writerow(["Samples", "Min", "Max", "Mean", "Median", "stdDev"])
+        writer.writerow(
+            [
+                stats.num_measurements,
+                stats.min_delay,
+                stats.max_delay,
+                stats.mean_delay,
+                stats.median_delay,
+                stats.std_dev,
+            ]
+        )
         writer.writerow(measurements)
 
     print(f"Saved results to {filename}")
@@ -157,15 +159,14 @@ def write_measurements_csv(filename, measurements, stats):
 def get_measurements_csv(filename):
     with open(filename, "r") as f:
         reader = csv.reader(f)
-        # 2nd row has the stats, 3rd row has the datapoints
         for i, row in enumerate(reader):
-            if i == 1:
-                # convert every string in the array into a float
-                stats_list = [float(i) for i in row]
-                # grab each element of the list to create the Stats object
-                stats = Stats(*stats_list)
-            if i == 2:
+            if i == 0:  # header row, do nothing
+                pass
+            elif i == 1:  # stats values
+                stats = Stats(*(float(i) for i in row))
+            elif i == 2:  # measurement samples
                 measurements = [float(i) for i in row]
+                break  # ignore further rows
     print(f"Obtained values from {filename}")
 
     return measurements, stats
@@ -238,25 +239,16 @@ def main():
     signal.signal(signal.SIGINT, sigint_handler)
 
     args = parse_arguments()
-    if args.filename.suffix != ".csv":
-        print("Error: Provided filename is invalid or does not have .csv extension")
-        sys.exit()
 
-    # Either write the data to a CSV file or read from a preexisting one
-    if not args.readcsv:
+    if args.readcsv:
+        g2g_delays, stats = get_measurements_csv(args.filename)
+    else:
         g2g_delays = get_measurements_serial(args.num_measurements, args.quiet)
         time.sleep(0.1)
-        # this function returns g2g_delays as a numpy array
         g2g_delays, stats = generate_stats(g2g_delays)
         write_measurements_csv(args.filename, g2g_delays, stats)
-    else:
-        print(f"Reading data from {args.filename}")
-        # this function returns g2g_delays as a list
-        g2g_delays, stats = get_measurements_csv(args.filename)
 
-    # save plot to a png file and display it. Data type doesn't seem to matter
-    fig_name = args.filename.with_suffix(".png").name
-    plot_results(g2g_delays, stats, fig_name)
+    plot_results(g2g_delays, stats, args.filename.with_suffix(".png"))
 
 
 if __name__ == "__main__":
