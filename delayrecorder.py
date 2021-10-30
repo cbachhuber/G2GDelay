@@ -10,7 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 from dataclasses import dataclass
-from typing import Optional
+from typing import List
 
 
 @dataclass
@@ -83,7 +83,7 @@ def find_arduino_on_serial_port() -> serial.Serial:
     raise ConnectionRefusedError("Did not find Arduino on any serial port. Is it connected?")
 
 
-def read_measurements_from_arduino(num_measurements, quiet_mode):
+def read_measurements_from_arduino(num_measurements: int, quiet_mode: bool) -> List[float]:
     serial = find_arduino_on_serial_port()
 
     print(f"Collecting {num_measurements} measurements from the Arduino")
@@ -133,8 +133,8 @@ Is the screen brightness high enough (max recommended)?"""
     return measurements
 
 
-def write_measurements_to_csv(filename, measurements, stats):
-    with open(filename, "w") as f:
+def write_measurements_to_csv(csv_file: Path, measurements: List[float], stats: Stats) -> None:
+    with open(csv_file, "w") as f:
         writer = csv.writer(f)
         writer.writerow(["Samples", "Min", "Max", "Mean", "Median", "stdDev"])
         writer.writerow(
@@ -149,11 +149,11 @@ def write_measurements_to_csv(filename, measurements, stats):
         )
         writer.writerow(measurements)
 
-    print(f"Saved results to {filename}")
+    print(f"Saved results to {csv_file}")
 
 
-def read_measurements_from_csv(filename):
-    with open(filename, "r") as f:
+def read_measurements_from_csv(csv_file: Path):
+    with open(csv_file, "r") as f:
         reader = csv.reader(f)
         for i, row in enumerate(reader):
             if i == 0:  # header row, do nothing
@@ -163,12 +163,12 @@ def read_measurements_from_csv(filename):
             elif i == 2:  # measurement samples
                 measurements = [float(i) for i in row]
                 break  # ignore further rows
-    print(f"Obtained values from {filename}")
+    print(f"Obtained values from {csv_file}")
 
     return measurements, stats
 
 
-def generate_stats(measurements):
+def generate_stats(measurements: List[float]) -> Stats:
     measurements_np = np.array(measurements)
 
     min_delay = np.min(measurements_np)
@@ -185,9 +185,9 @@ def generate_stats(measurements):
     return stats
 
 
-def plot_results(measurements, stats, fig_name):
+def plot_results(measurements: List[float], stats: Stats, png_file: Path) -> None:
     plt.hist(measurements, bins=20)
-    plt.gcf().canvas.manager.set_window_title(fig_name)
+    plt.gcf().canvas.manager.set_window_title(png_file.name)
     plt.title("Latency Histogram")
     plt.xlabel("Latency (ms)")
     plt.ylabel("Frequency")
@@ -225,12 +225,12 @@ def plot_results(measurements, stats, fig_name):
         bbox=props,
     )
 
-    plt.savefig(fig_name)
-    print(f"Saved histogram to {fig_name}")
+    plt.savefig(png_file)
+    print(f"Saved histogram to {png_file}")
     plt.show()
 
 
-def main():
+def main() -> None:
     # Set up signal handler to handle keyboard interrupts
     signal.signal(signal.SIGINT, sigint_handler)
 
