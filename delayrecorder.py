@@ -68,7 +68,7 @@ def parse_arguments():
     args = parser.parse_args()
     if args.filename.suffix != ".csv":
         print("Error: Provided filename is invalid or does not have .csv extension")
-        sys.exit(-1)
+        sys.exit(1)
     return args
 
 
