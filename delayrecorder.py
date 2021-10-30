@@ -10,7 +10,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass
@@ -72,19 +71,24 @@ def parse_arguments():
     return args
 
 
-def find_arduino_on_serial_port() -> serial.Serial:
-    devices = serial.tools.list_ports.comports()
-    for device in devices:
-        if device.manufacturer is not None:
-            if "Arduino" in device.manufacturer:
-                print(f"Found Arduino at {device[0]}")
-                return serial.Serial(device[0], 115200, timeout=5)
+def find_arduino_on_serial_port():
+    devs = serial.tools.list_ports.comports()
+    found = 0
+    for dev in devs:
+        if dev.manufacturer is not None:
+            if "Arduino" in dev.manufacturer:
+                print(f"Found Arduino at {dev[0]}")
+                ser = serial.Serial(dev[0], 115200, timeout=5)
+                found = 1
+    if found == 0:
+        print("Did not find Arduino on any serial port. Is it connected?")
+        sys.exit()
 
-    raise ConnectionRefusedError("Did not find Arduino on any serial port. Is it connected?")
+    return ser
 
 
-def read_measurements_from_arduino(num_measurements, quiet_mode):
-    serial = find_arduino_on_serial_port()
+def get_measurements_serial(num_measurements, quiet_mode):
+    ser = find_arduino_on_serial_port()
 
     print(f"Collecting {num_measurements} measurements from the Arduino")
     if quiet_mode:
@@ -93,7 +97,7 @@ def read_measurements_from_arduino(num_measurements, quiet_mode):
     # Read messages from Arduino
     timeout = time.time() + 0.01
     while True:
-        a = serial.readline().decode()
+        a = ser.readline().decode()
         if time.time() > timeout:
             break
 
@@ -104,7 +108,7 @@ def read_measurements_from_arduino(num_measurements, quiet_mode):
 
     while i < num_measurements:
         overall_rounds += 1
-        a = serial.readline().decode()
+        a = ser.readline().decode()
         if "." in a:
             init_message = 1
             i += 1
@@ -133,7 +137,7 @@ Is the screen brightness high enough (max recommended)?"""
     return measurements
 
 
-def write_measurements_to_csv(filename, measurements, stats):
+def write_measurements_csv(filename, measurements, stats):
     with open(filename, "w") as f:
         writer = csv.writer(f)
         writer.writerow(["Samples", "Min", "Max", "Mean", "Median", "stdDev"])
@@ -152,7 +156,7 @@ def write_measurements_to_csv(filename, measurements, stats):
     print(f"Saved results to {filename}")
 
 
-def read_measurements_from_csv(filename):
+def get_measurements_csv(filename):
     with open(filename, "r") as f:
         reader = csv.reader(f)
         for i, row in enumerate(reader):
@@ -182,7 +186,7 @@ def generate_stats(measurements):
     print(f"\nmin: {min_delay:.2f} ms | max: {max_delay:.2f} ms | median: {median_delay:.2f} ms")
     print(f"mean: {mean_delay:.2f} ms | std_dev: {std_dev:.2f} ms\n")
 
-    return stats
+    return measurements_np, stats
 
 
 def plot_results(measurements, stats, fig_name):
@@ -237,11 +241,12 @@ def main():
     args = parse_arguments()
 
     if args.readcsv:
-        g2g_delays, stats = read_measurements_from_csv(args.filename)
+        g2g_delays, stats = get_measurements_csv(args.filename)
     else:
-        g2g_delays = read_measurements_from_arduino(args.num_measurements, args.quiet)
-        stats = generate_stats(g2g_delays)
-        write_measurements_to_csv(args.filename, g2g_delays, stats)
+        g2g_delays = get_measurements_serial(args.num_measurements, args.quiet)
+        time.sleep(0.1)
+        g2g_delays, stats = generate_stats(g2g_delays)
+        write_measurements_csv(args.filename, g2g_delays, stats)
 
     plot_results(g2g_delays, stats, args.filename.with_suffix(".png"))
 
