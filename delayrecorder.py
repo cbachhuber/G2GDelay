@@ -84,58 +84,51 @@ def find_arduino_on_serial_port() -> serial.Serial:
 
 
 def read_measurements_from_arduino(num_measurements: int, quiet_mode: bool) -> List[float]:
-    try:
-        ser = find_arduino_on_serial_port()
+    serial = find_arduino_on_serial_port()
 
-        print(f"Collecting {num_measurements} measurements from the Arduino")
-        if quiet_mode:
-            print("Running in quiet mode, won't print the measurements to the terminal")
+    print(f"Collecting {num_measurements} measurements from the Arduino")
+    if quiet_mode:
+        print("Running in quiet mode, won't print the measurements to the terminal")
 
-        # Read messages from Arduino
-        timeout = time.time() + 0.01
-        while True:
-            a = ser.readline().decode()
-            if time.time() > timeout:
-                break
+    # Read messages from Arduino
+    timeout = time.time() + 0.01
+    while True:
+        a = serial.readline().decode()
+        if time.time() > timeout:
+            break
 
-        measurements = []
-        i = 0
-        overall_rounds = 0
-        init_message = 0
+    measurements = []
+    i = 0
+    overall_rounds = 0
+    init_message = 0
 
-        while i < num_measurements:
-            overall_rounds += 1
-            a = ser.readline().decode()
-            if "." in a:
-                init_message = 1
-                i += 1
-                a = a.replace("\n", "")
-                a = a.replace("\r", "")
-                measurements.append(float(a))
-                if not quiet_mode:
-                    print(f"G2G Delay trial {i}/{num_measurements}: {a} ms")
-                else:
-                    print(f"G2G Delay trial {i}/{num_measurements}", end="\r")
+    while i < num_measurements:
+        overall_rounds += 1
+        a = serial.readline().decode()
+        if "." in a:
+            init_message = 1
+            i += 1
+            a = a.replace("\n", "")
+            a = a.replace("\r", "")
+            measurements.append(float(a))
+            if not quiet_mode:
+                print(f"G2G Delay trial {i}/{num_measurements}: {a} ms")
             else:
-                if overall_rounds > 0 and init_message == 1:
-                    print(
-                        "Did not receive msmt data from the Arduino for another 5 seconds. "
-                        "Is the phototransistor still sensing the LED?"
-                    )
-                else:
-                    print(
-                        """Did not receive msmt data from the Arduino for 5 seconds.
+                print(f"G2G Delay trial {i}/{num_measurements}", end="\r")
+        else:
+            if overall_rounds > 0 and init_message == 1:
+                print(
+                    "Did not receive msmt data from the Arduino for another 5 seconds. "
+                    "Is the phototransistor still sensing the LED?"
+                )
+            else:
+                print(
+                    """Did not receive msmt data from the Arduino for 5 seconds.
 Is the phototransistor sensing the LED on the screen?
 Is the correct side of the PT pointing towards the screen (the flat side with the knob on it)?
 Is the screen brightness high enough (max recommended)?"""
-                    )
-                    init_message = 1
-    except ConnectionRefusedError as e:
-        print(f"ConnectionRefusedError error. {e}")
-        sys.exit(1)
-    except serial.SerialException:
-        print("SerialException error. Did you unplug the Arduino?")
-        sys.exit(1)
+                )
+                init_message = 1
 
     return measurements
 
