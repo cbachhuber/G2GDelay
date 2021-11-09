@@ -10,6 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 from dataclasses import dataclass
+from typing import List
 
 
 @dataclass
@@ -63,27 +64,27 @@ def parse_arguments():
         help="Reads a previously generated CSV and plots it. "
         "Be sure to provide the name of the CSV file if it's not the default name.",
     )
-    return parser.parse_args()
+
+    args = parser.parse_args()
+    if args.filename.suffix != ".csv":
+        print("Error: Provided filename is invalid or does not have .csv extension")
+        sys.exit(1)
+    return args
 
 
-def find_arduino_on_serial_port():
-    devs = serial.tools.list_ports.comports()
-    found = 0
-    for dev in devs:
-        if dev.manufacturer is not None:
-            if "Arduino" in dev.manufacturer:
-                print(f"Found Arduino at {dev[0]}")
-                ser = serial.Serial(dev[0], 115200, timeout=5)
-                found = 1
-    if found == 0:
-        print("Did not find Arduino on any serial port. Is it connected?")
-        sys.exit()
+def find_arduino_on_serial_port() -> serial.Serial:
+    devices = serial.tools.list_ports.comports()
+    for device in devices:
+        if device.manufacturer is not None:
+            if "Arduino" in device.manufacturer:
+                print(f"Found Arduino at {device[0]}")
+                return serial.Serial(device[0], 115200, timeout=5)
 
-    return ser
+    raise ConnectionRefusedError("Did not find Arduino on any serial port. Is it connected?")
 
 
-def get_measurements_serial(num_measurements, quiet_mode):
-    ser = find_arduino_on_serial_port()
+def read_measurements_from_arduino(num_measurements: int, quiet_mode: bool) -> List[float]:
+    serial = find_arduino_on_serial_port()
 
     print(f"Collecting {num_measurements} measurements from the Arduino")
     if quiet_mode:
@@ -92,7 +93,7 @@ def get_measurements_serial(num_measurements, quiet_mode):
     # Read messages from Arduino
     timeout = time.time() + 0.01
     while True:
-        a = ser.readline().decode()
+        a = serial.readline().decode()
         if time.time() > timeout:
             break
 
@@ -103,7 +104,7 @@ def get_measurements_serial(num_measurements, quiet_mode):
 
     while i < num_measurements:
         overall_rounds += 1
-        a = ser.readline().decode()
+        a = serial.readline().decode()
         if "." in a:
             init_message = 1
             i += 1
@@ -132,46 +133,42 @@ Is the screen brightness high enough (max recommended)?"""
     return measurements
 
 
-def write_measurements_csv(filename, measurements, stats):
-    with open(filename, "w") as f:
+def write_measurements_to_csv(csv_file: Path, measurements: List[float], stats: Stats) -> None:
+    with open(csv_file, "w") as f:
         writer = csv.writer(f)
-
-        header = ["Samples", "Min", "Max", "Mean", "Median", "stdDev"]
-        writer.writerow(header)
-
-        stats_list = [
-            stats.num_measurements,
-            stats.min_delay,
-            stats.max_delay,
-            stats.mean_delay,
-            stats.median_delay,
-            stats.std_dev,
-        ]
-        writer.writerow(stats_list)
-
+        writer.writerow(["Samples", "Min", "Max", "Mean", "Median", "stdDev"])
+        writer.writerow(
+            [
+                stats.num_measurements,
+                stats.min_delay,
+                stats.max_delay,
+                stats.mean_delay,
+                stats.median_delay,
+                stats.std_dev,
+            ]
+        )
         writer.writerow(measurements)
 
-    print(f"Saved results to {filename}")
+    print(f"Saved results to {csv_file}")
 
 
-def get_measurements_csv(filename):
-    with open(filename, "r") as f:
+def read_measurements_from_csv(csv_file: Path):
+    with open(csv_file, "r") as f:
         reader = csv.reader(f)
-        # 2nd row has the stats, 3rd row has the datapoints
         for i, row in enumerate(reader):
-            if i == 1:
-                # convert every string in the array into a float
-                stats_list = [float(i) for i in row]
-                # grab each element of the list to create the Stats object
-                stats = Stats(*stats_list)
-            if i == 2:
+            if i == 0:  # header row, do nothing
+                pass
+            elif i == 1:  # stats values
+                stats = Stats(*(float(i) for i in row))
+            elif i == 2:  # measurement samples
                 measurements = [float(i) for i in row]
-    print(f"Obtained values from {filename}")
+                break  # ignore further rows
+    print(f"Obtained values from {csv_file}")
 
     return measurements, stats
 
 
-def generate_stats(measurements):
+def generate_stats(measurements: List[float]) -> Stats:
     measurements_np = np.array(measurements)
 
     min_delay = np.min(measurements_np)
@@ -185,12 +182,12 @@ def generate_stats(measurements):
     print(f"\nmin: {min_delay:.2f} ms | max: {max_delay:.2f} ms | median: {median_delay:.2f} ms")
     print(f"mean: {mean_delay:.2f} ms | std_dev: {std_dev:.2f} ms\n")
 
-    return measurements_np, stats
+    return stats
 
 
-def plot_results(measurements, stats, fig_name):
+def plot_results(measurements: List[float], stats: Stats, png_file: Path) -> None:
     plt.hist(measurements, bins=20)
-    plt.gcf().canvas.manager.set_window_title(fig_name)
+    plt.gcf().canvas.manager.set_window_title(png_file.name)
     plt.title("Latency Histogram")
     plt.xlabel("Latency (ms)")
     plt.ylabel("Frequency")
@@ -228,35 +225,25 @@ def plot_results(measurements, stats, fig_name):
         bbox=props,
     )
 
-    plt.savefig(fig_name)
-    print(f"Saved histogram to {fig_name}")
+    plt.savefig(png_file)
+    print(f"Saved histogram to {png_file}")
     plt.show()
 
 
-def main():
+def main() -> None:
     # Set up signal handler to handle keyboard interrupts
     signal.signal(signal.SIGINT, sigint_handler)
 
     args = parse_arguments()
-    if args.filename.suffix != ".csv":
-        print("Error: Provided filename is invalid or does not have .csv extension")
-        sys.exit()
 
-    # Either write the data to a CSV file or read from a preexisting one
-    if not args.readcsv:
-        g2g_delays = get_measurements_serial(args.num_measurements, args.quiet)
-        time.sleep(0.1)
-        # this function returns g2g_delays as a numpy array
-        g2g_delays, stats = generate_stats(g2g_delays)
-        write_measurements_csv(args.filename, g2g_delays, stats)
+    if args.readcsv:
+        g2g_delays, stats = read_measurements_from_csv(args.filename)
     else:
-        print(f"Reading data from {args.filename}")
-        # this function returns g2g_delays as a list
-        g2g_delays, stats = get_measurements_csv(args.filename)
+        g2g_delays = read_measurements_from_arduino(args.num_measurements, args.quiet)
+        stats = generate_stats(g2g_delays)
+        write_measurements_to_csv(args.filename, g2g_delays, stats)
 
-    # save plot to a png file and display it. Data type doesn't seem to matter
-    fig_name = args.filename.with_suffix(".png").name
-    plot_results(g2g_delays, stats, fig_name)
+    plot_results(g2g_delays, stats, args.filename.with_suffix(".png"))
 
 
 if __name__ == "__main__":
