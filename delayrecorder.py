@@ -214,16 +214,7 @@ def plot_results(measurements: List[float], stats: Stats, png_file: Path) -> Non
     )
     textstr2 = "\n".join((r"$\mu=%.2f$" % (stats.mean_delay,), r"$\sigma=%.2f$" % (stats.std_dev,)))
     # place it at position x=0.95, y=0.90, relative to the top and right of the box
-    ax.text(
-        0.95,
-        0.95,
-        textstr2,
-        transform=ax.transAxes,
-        fontsize=14,
-        verticalalignment="top",
-        horizontalalignment="right",
-        bbox=props,
-    )
+    ax.text( 0.95, 0.95, textstr2, transform=ax.transAxes, fontsize=14, verticalalignment="top", horizontalalignment="right", bbox=props)
 
     plt.savefig(png_file)
     print(f"Saved histogram to {png_file}")
