@@ -10,20 +10,32 @@ There are three main components in this repository: the circuit layout (file [ci
 
 For building the measurement device, you need the following parts:
 - Arduino Mega 2560: Does not have to be original Arduino, can also be e.g. a SunFounder Mega 2560
-- LED: A Light-emitting diode, e.g. LED 5-4500 RT
-- Phototransistor: For example the SDP 8406-003
-- Resistor 11kOhm: Any 11kOhm resistor will do the job, e.g. the 1/4W 11K
+- LED: A Light-emitting diode, e.g. `LED 5-4500 RT`. You might need to play around with these - depending on the colour and brightness of the LED, the PT may have a harder time detecting the LED on your screen
+- Phototransistor: For example the `SDP 8406-003`
+- Resistor 11k$\Omega$: Any 11k$\Omega$ resistor will do the job, e.g. the 1/4W 11K
+- Resistor 220$\Omega$: A resistor around this value will limit the current draw from the LED and protect the Arduino pin
 - Wires
-- Optional: A breadboard
+- Optional: A breadboard, protoboard or Arduino shield
+- Optional: 3D-printed case with three to seven `M3x10` screws and three to seven `278 534` (or equivalent) threaded inserts
 
-Next, connect the elements as such:
+Next, you have a few options for building the circuit. Either way, make sure that pin A0 is not connected to anything (or pick a new free analog pin for it) - it needs to be floating for the randomness to work properly.
+
+If you make it on an Arduino shield, you can 3D print [this case](https://grabcad.com/library/glass2glass-arduino-mega-case-1) for it and do something like this:
 
 <p align="center">
-  <img width="960" src="./circuit.svg">
+  <img width="960" src="img/closed-case.jpg">
+  <img width="960" src="img/open-case.jpg">
 </p>
 
-You can simplify the above circuit and waive for example the breadboard.
-Make sure that pin A0 is not connected to anything (or pick a new analog pin for it) - it needs to be floating for the randomness to work properly.
+ See [img](img) folder for more pictures. (There's an extra resistor in the protoboard circuit because I'm using two resistors to make the 11k$\Omega$ resistance.)
+
+Otherwise, you can make it on a breadboard like this (todo: add resistor in series with the LED):
+
+<p align="center">
+  <img width="960" src="img/circuit.svg">
+</p>
+
+You can also simplify the above circuit and waive for example the breadboard.
 
 ## Software Setup
 
